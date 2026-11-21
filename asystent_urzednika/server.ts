@@ -6,7 +6,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import pdfParse from "pdf-parse";
 import mammoth from "mammoth";
 
-const PORT = Number(process.env.PORT || 3000);
+const PORT = Number(process.env.PORT || 3313);
 const ROOT_DIR = process.cwd();
 
 function getGeminiClient(): GoogleGenAI {

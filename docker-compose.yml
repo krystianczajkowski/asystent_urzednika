@@ -1,0 +1,16 @@
+services:
+  asystent-urzednika:
+    build:
+      context: ./asystent_urzednika
+      dockerfile: Dockerfile
+    image: asystent-urzednika:latest
+    container_name: asystent-urzednika
+    restart: unless-stopped
+    ports:
+      - "3313:3313"
+    environment:
+      - NODE_ENV=production
+      - PORT=3313
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    env_file:
+      - .env
