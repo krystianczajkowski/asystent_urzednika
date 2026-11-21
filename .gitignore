@@ -22,3 +22,5 @@ Thumbs.db
 # Lock files (opcjonalne — odkomentuj jeśli nie chcesz commitować)
 # package-lock.json
 # asystent_urzednika/package-lock.json
+asystent_urzednika/package-lock.json
+asystent_urzednika/package.json

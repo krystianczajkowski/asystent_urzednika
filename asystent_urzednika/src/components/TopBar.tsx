@@ -13,7 +13,6 @@ const NAV_ITEMS: Array<{ id: AppView; label: string }> = [
   { id: "calendar", label: "Kalendarz wniosków" },
   { id: "workflow", label: "Workflow i analiza" },
   { id: "knowledge", label: "Baza wiedzy" },
-  { id: "architecture", label: "Wdrożenie lokalne" },
 ];
 
 export const TopBar: React.FC<TopBarProps> = ({
