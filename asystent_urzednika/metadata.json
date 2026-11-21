@@ -1,0 +1,8 @@
+{
+  "name": "Asystent UDIP — Urząd Miasta Bydgoszczy",
+  "description": "Inteligentny asystent urzędnika do obsługi wniosków o dostęp do informacji publicznej (UDIP) z kalendarzem terminów, analizą neuronową, bazą wiedzy i modułem anonimizacji.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
