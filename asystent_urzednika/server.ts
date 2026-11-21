@@ -6,6 +6,42 @@ import { GoogleGenAI, Type } from "@google/genai";
 import pdfParse from "pdf-parse";
 import mammoth from "mammoth";
 
+// Załaduj zmienne środowiskowe z pliku .env (jeśli istnieje)
+const envPath = path.resolve(process.cwd(), ".env");
+if (fs.existsSync(envPath)) {
+  if (typeof (process as any).loadEnvFile === "function") {
+    try {
+      (process as any).loadEnvFile(envPath);
+    } catch (e) {
+      console.warn("Nie udało się załadować .env przez process.loadEnvFile:", e);
+    }
+  } else {
+    try {
+      const content = fs.readFileSync(envPath, "utf-8");
+      for (const line of content.split("\n")) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith("#")) continue;
+        const eqIdx = trimmed.indexOf("=");
+        if (eqIdx !== -1) {
+          const key = trimmed.slice(0, eqIdx).trim();
+          let val = trimmed.slice(eqIdx + 1).trim();
+          if (
+            (val.startsWith('"') && val.endsWith('"')) ||
+            (val.startsWith("'") && val.endsWith("'"))
+          ) {
+            val = val.slice(1, -1);
+          }
+          if (process.env[key] === undefined) {
+            process.env[key] = val;
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Nie udało się sparsować pliku .env:", e);
+    }
+  }
+}
+
 const PORT = Number(process.env.PORT || 3313);
 const ROOT_DIR = process.cwd();
 
