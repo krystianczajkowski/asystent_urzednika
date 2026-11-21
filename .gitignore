@@ -1,0 +1,24 @@
+# Zależności
+node_modules/
+asystent_urzednika/node_modules/
+
+# Build
+dist/
+asystent_urzednika/dist/
+
+# Środowisko
+.env
+.env.local
+.env.*.local
+
+# Logi
+*.log
+npm-debug.log*
+
+# System
+.DS_Store
+Thumbs.db
+
+# Lock files (opcjonalne — odkomentuj jeśli nie chcesz commitować)
+# package-lock.json
+# asystent_urzednika/package-lock.json
