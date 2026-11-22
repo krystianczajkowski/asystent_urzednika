@@ -1,0 +1,68 @@
+<div class="app-shell">
+  <header class="topbar">
+    <a class="brand" href="#" (click)="$event.preventDefault(); navigate('cases')">
+      <span class="brand-mark">AU</span>
+      <span>
+        <strong>Asystent Urzędnika</strong>
+        <small>Urząd Miasta Bydgoszczy</small>
+      </span>
+    </a>
+    <nav class="main-nav" aria-label="Nawigacja główna">
+      <button [class.active]="activeView() === 'cases' || activeView() === 'workflow'" (click)="navigate('cases')">
+        Sprawy
+      </button>
+      <button [class.active]="activeView() === 'calendar'" (click)="navigate('calendar')">
+        Kalendarz
+      </button>
+      <button [class.active]="activeView() === 'knowledge'" (click)="navigate('knowledge')">
+        Baza wiedzy
+      </button>
+    </nav>
+    <button class="primary-button new-case" (click)="createCase()">
+      <span aria-hidden="true">＋</span> Nowa sprawa
+    </button>
+  </header>
+
+  <main class="workspace" aria-live="polite">
+    @if (isLoading()) {
+      <div class="loading-state"><span class="spinner"></span> Wczytywanie rejestru spraw...</div>
+    } @else if (loadError()) {
+      <section class="status-card error-card" role="alert">
+        <p class="eyebrow">Błąd połączenia</p>
+        <h1>Nie można wczytać danych</h1>
+        <p>{{ loadError() }}</p>
+        <button class="primary-button" (click)="loadInitialData()">Spróbuj ponownie</button>
+      </section>
+    } @else {
+      @if (activeView() === 'cases' || activeView() === 'calendar') {
+        <app-calendar
+          [mode]="activeView() === 'calendar' ? 'calendar' : 'cases'"
+          [cases]="cases()"
+          [referenceDate]="referenceDate()"
+          (openCase)="activeCaseId.set($event); navigate('workflow')"
+        />
+      } @else if (activeView() === 'workflow') {
+        <app-case-workflow
+          [cases]="cases()"
+          [activeCaseId]="activeCaseId()"
+          [departments]="departments()"
+          [knowledgeBase]="knowledgeBase()"
+          [sampleDocuments]="sampleDocuments()"
+          [referenceDate]="referenceDate()"
+          (activeCaseIdChange)="activeCaseId.set($event)"
+          (updateCase)="updateCase($event)"
+          (createCase)="createCase($event.content, $event.subject)"
+          (saveKnowledgeBase)="addKnowledgeBaseEntry($event)"
+          (backToCalendar)="navigate('cases')"
+        />
+      } @else {
+        <app-knowledge-base
+          [entries]="knowledgeBase()"
+          [departments]="departments()"
+          [anonymizationRules]="anonymizationRules()"
+          (addEntry)="addKnowledgeBaseEntry($event)"
+        />
+      }
+    }
+  </main>
+</div>

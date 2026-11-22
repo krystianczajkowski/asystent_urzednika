@@ -1,0 +1,180 @@
+@if (activeCase(); as item) {
+  <section class="workflow-heading">
+    <div>
+      <button class="text-button" (click)="backToCalendar.emit()">← Wróć do spraw</button>
+      <p class="eyebrow">Obsługa sprawy</p>
+      <h1>{{ item.subject }}</h1>
+      <p class="muted">{{ item.caseNumber }} · termin {{ formatDate(item.dueDate) }}</p>
+    </div>
+  </section>
+
+  <nav class="step-nav" aria-label="Etapy obsługi sprawy">
+    <button [class.active]="activeStep() === 'request'" (click)="selectStep('request')">1. Wniosek</button>
+    <button [class.active]="activeStep() === 'analysis'" [disabled]="!item.analysis" (click)="selectStep('analysis')">2. Analiza</button>
+    <button [class.active]="activeStep() === 'response'" [disabled]="!item.analysis" (click)="selectStep('response')">3. Odpowiedź</button>
+  </nav>
+
+  @if (errorMessage()) { <p class="error-banner" role="alert">{{ errorMessage() }}</p> }
+  @if (notice()) { <p class="notice-banner" aria-live="polite">{{ notice() }}</p> }
+
+  @if (activeStep() === 'request') {
+    <section class="panel step-panel">
+      <h2>Dodaj treść wniosku</h2>
+      <p class="helper-text">Wybierz dokument albo wklej treść. Bielik pomoże przygotować analizę i znaleźć podobne sprawy.</p>
+
+      <label class="upload-zone" [class.drag-active]="dragActive()" (dragenter)="dragActive.set(true)" (dragleave)="dragActive.set(false)" (dragover)="$event.preventDefault()" (drop)="dropFile($event)">
+        <input type="file" accept=".pdf,.docx,.txt" [disabled]="isReadingFile()" (change)="uploadRequest($event)" />
+        <strong>{{ isReadingFile() ? 'Analizuję dokument za pomocą Bielika…' : '＋ Dodaj dokument' }}</strong>
+        <span>{{ isReadingFile() ? 'Proszę chwilę poczekać' : 'PDF, DOCX lub TXT · maks. 10 MB' }}</span>
+      </label>
+
+      @if (documentResult(); as result) {
+        @if (result.caseId === item.id) {
+          <div class="document-ready" aria-live="polite">
+            <strong>Dokument wczytany: {{ result.analysis.fileName }}</strong>
+            <details>
+              <summary>Pokaż podsumowanie dokumentu</summary>
+              <p>{{ result.analysis.summary }}</p>
+            </details>
+          </div>
+        }
+      }
+
+      <label class="field-label">Treść wniosku
+        <textarea rows="9" [ngModel]="item.fullRequestText" (ngModelChange)="update({ fullRequestText: $event })" placeholder="Wklej tutaj treść wniosku…"></textarea>
+      </label>
+
+      <details class="secondary-options">
+        <summary>Przykład wniosku</summary>
+        <div class="sample-list">
+          @for (sample of sampleDocuments(); track sample.id) {
+            <button type="button" class="sample-button" (click)="loadSample(sample)">{{ sample.label }}</button>
+          }
+        </div>
+      </details>
+
+      <details class="secondary-options">
+        <summary>Dane sprawy i status</summary>
+        <div class="field-grid">
+          <label class="field-label">Numer sprawy<input [ngModel]="item.caseNumber" (ngModelChange)="update({ caseNumber: $event })" /></label>
+          <label class="field-label">Wnioskodawca<input [ngModel]="item.applicant" (ngModelChange)="update({ applicant: $event })" /></label>
+          <label class="field-label">Data wpływu<input type="date" [ngModel]="item.receivedDate" (ngModelChange)="update({ receivedDate: $event })" /></label>
+          <label class="field-label">Termin odpowiedzi<input type="date" [ngModel]="item.dueDate" (ngModelChange)="update({ dueDate: $event })" /></label>
+          <label class="field-label">Status sprawy
+            <select [ngModel]="item.status" (ngModelChange)="setStatus($event)">
+              <option value="brak_dzialan">Nowa</option>
+              <option value="zapytania_wyslane">Zapytanie wysłane</option>
+              <option value="kwerenda">W trakcie ustaleń</option>
+              <option value="doprecyzowanie">Oczekuje na doprecyzowanie</option>
+              <option value="przygotowana">Projekt gotowy</option>
+              <option value="wyslana">Odpowiedź wysłana</option>
+            </select>
+          </label>
+        </div>
+      </details>
+
+      <button class="primary-button" [disabled]="isAnalyzing() || !item.fullRequestText.trim()" (click)="analyze()">
+        {{ isAnalyzing() ? 'Analizuję wniosek…' : 'Przeanalizuj wniosek' }}
+      </button>
+    </section>
+  } @else if (activeStep() === 'analysis') {
+    @if (item.analysis; as analysis) {
+      <section class="panel step-panel">
+        <p class="eyebrow">Wynik analizy</p>
+        <h2>Najważniejsze informacje</h2>
+        <p class="analysis-summary">{{ analysis.summary }}</p>
+        <div class="analysis-fields">
+          @if (analysis.extractedMetadata.applicantName) { <p><strong>Wnioskodawca</strong>{{ analysis.extractedMetadata.applicantName }}</p> }
+          @if (analysis.extractedMetadata.subject) { <p><strong>Temat</strong>{{ analysis.extractedMetadata.subject }}</p> }
+          @if (analysis.routingPredictions[0]; as route) {
+            <p><strong>Proponowany wydział</strong>{{ route.departmentName }}</p>
+          }
+        </div>
+
+        @if (analysis.similarCases.length) {
+          <details class="secondary-options">
+            <summary>Znalezione podobne sprawy ({{ analysis.similarCases.length }})</summary>
+            <div class="match-list">
+              @for (match of analysis.similarCases; track match.kbId + match.caseNumber) {
+                <article class="match-card">
+                  <strong>{{ match.title }}</strong>
+                  <span>{{ match.caseNumber }} · {{ match.similarityPercent }}% podobieństwa</span>
+                  <p>{{ match.reason }}</p>
+                  @if (match.reusableExcerpt) { <button class="text-button" (click)="addArchive(match)">Dodaj fragment do materiałów odpowiedzi</button> }
+                </article>
+              }
+            </div>
+          </details>
+        } @else {
+          <p class="helper-text">Nie znaleziono podobnych spraw w archiwum.</p>
+        }
+
+        @if (analysis.departmentInquiryDraft || analysis.legalBasis.length) {
+          <details class="secondary-options">
+            <summary>Pozostałe informacje z analizy</summary>
+            @if (analysis.departmentInquiryDraft) { <p>{{ analysis.departmentInquiryDraft }}</p> }
+            @if (analysis.legalBasis.length) { <p><strong>Podstawa prawna:</strong> {{ analysis.legalBasis.join(' · ') }}</p> }
+          </details>
+        }
+
+        <button class="primary-button" (click)="selectStep('response')">Przejdź do odpowiedzi</button>
+      </section>
+    }
+  } @else {
+    <section class="panel step-panel">
+      <p class="eyebrow">Projekt odpowiedzi</p>
+      <h2>Przygotuj pismo</h2>
+      <p class="helper-text">Uzupełnij informacje otrzymane z wydziału. Projekt zawsze sprawdź przed wysłaniem.</p>
+
+      <label class="field-label">Odpowiedź lub ustalenia z wydziału
+        <textarea rows="5" [ngModel]="item.departmentReplyText" (ngModelChange)="update({ departmentReplyText: $event })" placeholder="Wklej odpowiedź wydziału, jeśli jest dostępna…"></textarea>
+      </label>
+
+      <label class="field-label">Rodzaj pisma
+        <select [ngModel]="responseMode()" (ngModelChange)="setMode($event)">
+          <option value="merit">Odpowiedź na wniosek</option>
+          <option value="clarification">Prośba o doprecyzowanie</option>
+          <option value="redirect">Przekazanie do właściwego podmiotu</option>
+          <option value="extension">Informacja o przedłużeniu terminu</option>
+        </select>
+      </label>
+
+      <details class="secondary-options">
+        <summary>Więcej ustawień</summary>
+        <label class="field-label">Wydział
+          <select [ngModel]="item.recommendedDepartmentId" (ngModelChange)="update({ recommendedDepartmentId: $event })">
+            @for (department of departments(); track department.id) { <option [value]="department.id">{{ department.name }}</option> }
+          </select>
+        </label>
+        <label class="field-label">Dodatkowe wskazówki
+          <textarea rows="3" [ngModel]="officialNotes()" (ngModelChange)="officialNotes.set($event)" placeholder="Opcjonalne informacje do uwzględnienia"></textarea>
+        </label>
+      </details>
+
+      <button class="primary-button" [disabled]="isGenerating() || !item.fullRequestText.trim()" (click)="generateDraft()">
+        {{ isGenerating() ? 'Przygotowuję projekt…' : 'Wygeneruj projekt odpowiedzi' }}
+      </button>
+
+      @if (item.draftResponseText) {
+        <section class="draft-result">
+          <div>
+            <h3>Projekt odpowiedzi</h3>
+            <p>Przed wysłaniem sprawdź treść i uzupełnij ewentualne braki.</p>
+          </div>
+          <textarea rows="14" [ngModel]="item.draftResponseText" (ngModelChange)="update({ draftResponseText: $event })" aria-label="Treść projektu odpowiedzi"></textarea>
+          <div class="draft-actions">
+            <button class="secondary-button" (click)="copyDraft()">Kopiuj tekst</button>
+            <button class="secondary-button" [disabled]="item.savedToKnowledgeBase" (click)="saveToArchive()">{{ item.savedToKnowledgeBase ? 'Zapisano w bazie wiedzy' : 'Zapisz w bazie wiedzy' }}</button>
+            <button class="secondary-button" (click)="setStatus('wyslana')">Oznacz jako wysłaną</button>
+          </div>
+        </section>
+      }
+    </section>
+  }
+} @else {
+  <section class="panel empty-workflow">
+    <h1>Nie wybrano sprawy</h1>
+    <p>Wróć do listy spraw albo utwórz nową.</p>
+    <button class="primary-button" (click)="createBlankCase()">Utwórz sprawę</button>
+  </section>
+}

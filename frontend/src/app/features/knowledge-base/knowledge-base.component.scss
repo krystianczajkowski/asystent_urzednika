@@ -1,0 +1,64 @@
+:host { display: block; max-width: 1080px; margin: 0 auto; }
+.page-heading { margin-bottom: 20px; }
+.eyebrow { margin: 0 0 6px; color: #64748b; font-size: 13px; font-weight: 600; }
+h1 { margin: 0; font-size: clamp(26px, 3vw, 34px); letter-spacing: -.03em; }
+.muted { color: #64748b; font-size: 14px; line-height: 1.55; }
+.tabs { display: flex; gap: 18px; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; }
+.tabs button { border: 0; border-bottom: 2px solid transparent; background: none; padding: 11px 2px; color: #64748b; font: inherit; font-size: 13px; cursor: pointer; }
+.tabs button.active { border-bottom-color: #1d4ed8; color: #1d4ed8; font-weight: 650; }
+.panel { border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; }
+.archive-panel { overflow: hidden; }
+.search-bar { display: flex; gap: 9px; padding: 14px; border-bottom: 1px solid #e2e8f0; }
+.search-bar input, .search-bar select, form input, form select, form textarea { box-sizing: border-box; min-width: 0; width: 100%; min-height: 42px; border: 1px solid #d5dce7; border-radius: 8px; padding: 10px 12px; background: #fff; color: #172033; font: inherit; font-size: 13px; }
+.search-bar input { flex: 1; }
+.search-bar select { width: auto; }
+.primary-button, .secondary-button { min-height: 42px; flex-shrink: 0; border-radius: 8px; padding: 0 13px; font: inherit; font-size: 13px; cursor: pointer; }
+.primary-button { border: 0; background: #1d4ed8; color: #fff; font-weight: 650; }
+.primary-button:hover { background: #1e40af; }
+.secondary-button { border: 1px solid #d5dce7; background: #fff; color: #334155; }
+.entry { padding: 17px 18px; border-bottom: 1px solid #edf0f4; }
+.entry:last-child { border-bottom: 0; }
+.entry-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #64748b; font-size: 12px; }
+.entry-kind { color: #1d4ed8; font-weight: 650; }
+.entry h2 { margin: 8px 0 5px; font-size: 15px; font-weight: 650; }
+.entry-summary { margin: 0 0 9px; color: #64748b; font-size: 13px; line-height: 1.5; }
+.entry details, .secondary-options { color: #1d4ed8; font-size: 12px; }
+.entry summary, .secondary-options summary { width: fit-content; cursor: pointer; }
+.entry-answer { margin: 10px 0 6px; color: #334155; font-size: 13px; line-height: 1.6; white-space: pre-line; }
+.entry-source { margin: 0; color: #64748b; font-size: 11px; }
+.empty-state { padding: 36px 18px; color: #64748b; text-align: center; }
+.add-panel { max-width: 720px; margin: 0 auto; padding: clamp(18px, 4vw, 30px); }
+.text-button { border: 0; background: none; padding: 0; color: #1d4ed8; font: inherit; font-size: 13px; cursor: pointer; }
+.add-panel h2, .privacy-panel h2 { margin: 18px 0 6px; font-size: 21px; }
+.add-panel .muted { margin: 0 0 18px; }
+.file-button { display: block; margin-bottom: 14px; border: 1px dashed #94a3b8; border-radius: 8px; padding: 13px; color: #334155; text-align: center; font-size: 13px; cursor: pointer; }
+.file-button:hover { border-color: #1d4ed8; color: #1d4ed8; }
+.file-button input { display: none; }
+form, form label { display: grid; gap: 7px; }
+form { gap: 15px; }
+form label { color: #334155; font-size: 13px; font-weight: 600; }
+form textarea { resize: vertical; line-height: 1.55; }
+.secondary-options { border-top: 1px solid #edf0f4; padding-top: 13px; }
+.secondary-options[open] .field-grid { display: grid; }
+.field-grid { display: none; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 13px; }
+.form-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.notice, .error { border-radius: 7px; padding: 10px 12px; font-size: 13px; line-height: 1.45; }
+.notice { background: #eff6ff; color: #1d4ed8; }
+.error { background: #fef2f2; color: #b91c1c; }
+.department-list { overflow: hidden; }
+.department-card { padding: 16px 18px; border-bottom: 1px solid #edf0f4; }
+.department-card:last-child { border-bottom: 0; }
+.department-card > div { display: flex; justify-content: space-between; gap: 12px; }
+.department-card strong { font-size: 14px; font-weight: 650; }
+.department-card span, .department-card small { color: #64748b; font-size: 12px; }
+.department-card p { margin: 7px 0; color: #475569; font-size: 13px; line-height: 1.5; }
+.privacy-panel { padding: clamp(18px, 4vw, 28px); }
+.privacy-panel h2 { margin-top: 0; }
+.privacy-panel ul { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 28px; padding-left: 20px; color: #334155; font-size: 13px; line-height: 1.5; }
+@media (max-width: 700px) {
+  .search-bar { flex-wrap: wrap; }
+  .search-bar input { flex-basis: 100%; }
+  .search-bar select { flex: 1; }
+  .search-bar .primary-button { flex: 1; }
+  .field-grid, .privacy-panel ul { grid-template-columns: 1fr; }
+}

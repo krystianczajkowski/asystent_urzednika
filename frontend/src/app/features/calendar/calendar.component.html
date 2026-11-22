@@ -1,0 +1,99 @@
+@if (mode() === 'cases') {
+  <section class="page-heading">
+    <div>
+      <p class="eyebrow">Rejestr spraw</p>
+      <h1>Sprawy</h1>
+      <p class="muted">Znajdź wniosek lub otwórz sprawę, aby kontynuować pracę.</p>
+    </div>
+  </section>
+
+  <section class="panel registry-panel">
+    <div class="registry-toolbar">
+      <input aria-label="Szukaj spraw" placeholder="Szukaj po nazwisku, temacie lub numerze sprawy" [ngModel]="query()" (ngModelChange)="query.set($event)" />
+      <select aria-label="Filtruj sprawy" [ngModel]="status()" (ngModelChange)="status.set($event)">
+        <option value="all">Wszystkie sprawy</option>
+        <option value="urgent">Wymagają uwagi</option>
+        <option value="active">W toku</option>
+        <option value="done">Zakończone</option>
+      </select>
+    </div>
+
+    <div class="case-list">
+      @for (item of filteredCases(); track item.id) {
+        <button class="case-row" (click)="openCase.emit(item.id)">
+          <span class="case-summary">
+            <strong>{{ item.applicant }}</strong>
+            <small>{{ item.subject }}</small>
+            <small class="case-number">{{ item.caseNumber }}</small>
+          </span>
+          <span class="case-details">
+            <span class="status-label">{{ statusLabel(item.status) }}</span>
+            <span class="deadline" [class.overdue]="daysLeft(item.dueDate) < 0 && item.status !== 'wyslana'">{{ deadlineLabel(item) }}</span>
+          </span>
+          <span class="open-label">Otwórz sprawę <span aria-hidden="true">→</span></span>
+        </button>
+      } @empty {
+        <div class="empty-list">Nie znaleziono spraw. Zmień wyszukiwanie lub filtr.</div>
+      }
+    </div>
+  </section>
+} @else {
+  <section class="page-heading">
+    <div>
+      <p class="eyebrow">Terminy</p>
+      <h1>Kalendarz</h1>
+      <p class="muted">Wybierz dzień zaznaczony kropką, aby zobaczyć sprawy z terminem.</p>
+    </div>
+  </section>
+
+  <section class="panel calendar-panel">
+    <div class="panel-heading">
+      <h2>{{ monthLabel() }}</h2>
+      <div class="month-actions">
+        <button aria-label="Poprzedni miesiąc" (click)="shiftMonth(-1)">‹</button>
+        <button aria-label="Następny miesiąc" (click)="shiftMonth(1)">›</button>
+      </div>
+    </div>
+    <div class="weekdays">
+      @for (day of ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'So', 'Nd']; track day) { <span>{{ day }}</span> }
+    </div>
+    <div class="month-grid">
+      @for (cell of calendarCells(); track $index) {
+        @if (cell.date) {
+          <button
+            [class.has-due]="hasDue(cell.date)"
+            [class.selected]="cell.date === selectedDate()"
+            [attr.aria-label]="hasDue(cell.date) ? `${cell.day}, termin sprawy` : `${cell.day}`"
+            (click)="selectDate(cell.date!)"
+          >
+            <span>{{ cell.day }}</span>
+            @if (hasDue(cell.date)) { <i class="day-dot" aria-hidden="true"></i> }
+          </button>
+        } @else {
+          <span class="empty-day"></span>
+        }
+      }
+    </div>
+    <div class="calendar-legend"><i class="day-dot"></i> Termin sprawy</div>
+  </section>
+
+  @if (selectedDate()) {
+    <section class="selected-day">
+      <div class="selected-day-heading">
+        <h2>Sprawy z terminem {{ formatDate(selectedDate()) }}</h2>
+        <button class="text-button" (click)="selectedDate.set('')">Wyczyść wybór</button>
+      </div>
+      <div class="selected-case-list">
+        @for (item of filteredCases(); track item.id) {
+          <button class="selected-case" (click)="openCase.emit(item.id)">
+            <span><strong>{{ item.applicant }}</strong><small>{{ item.subject }}</small></span>
+            <span>{{ item.caseNumber }}</span>
+            <span aria-hidden="true">→</span>
+          </button>
+        } @empty {
+          <p>Brak spraw z terminem w tym dniu.</p>
+        }
+      </div>
+    </section>
+  }
+}

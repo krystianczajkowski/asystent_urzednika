@@ -1,0 +1,108 @@
+<section class="page-heading">
+  <div>
+    <p class="eyebrow">Materiały pomocne przy obsłudze wniosków</p>
+    <h1>Baza wiedzy</h1>
+    <p class="muted">Wyszukaj wcześniejszą odpowiedź lub dokument.</p>
+  </div>
+</section>
+
+<nav class="tabs" aria-label="Sekcje bazy wiedzy">
+  <button [class.active]="activeTab() === 'archive'" (click)="openTab('archive')">Materiały</button>
+  <button [class.active]="activeTab() === 'departments'" (click)="openTab('departments')">Wydziały</button>
+  <button [class.active]="activeTab() === 'privacy'" (click)="openTab('privacy')">Anonimizacja</button>
+</nav>
+
+@if (activeTab() === 'archive') {
+  @if (isAdding()) {
+    <section class="add-panel panel">
+      <button class="text-button" (click)="isAdding.set(false)">← Wróć do materiałów</button>
+      <h2>Dodaj materiał</h2>
+      <p class="muted">Dodaj sprawdzoną odpowiedź, akt prawny lub zarządzenie.</p>
+
+      <label class="file-button">
+        <input type="file" accept=".pdf,.docx,.txt" [disabled]="isReadingFile()" (change)="readFile($event)" />
+        {{ isReadingFile() ? 'Wczytuję dokument…' : 'Wczytaj dokument PDF, DOCX lub TXT' }}
+      </label>
+      @if (uploadStatus()) { <p class="notice">{{ uploadStatus() }}</p> }
+      @if (errorMessage()) { <p class="error" role="alert">{{ errorMessage() }}</p> }
+
+      <form (submit)="saveEntry($event)">
+        <label>Tytuł materiału
+          <input required [ngModel]="title()" (ngModelChange)="title.set($event)" name="title" placeholder="np. Odpowiedź w sprawie schroniska" />
+        </label>
+        <label>Treść
+          <textarea required rows="10" [ngModel]="answerText()" (ngModelChange)="answerText.set($event)" name="answerText" placeholder="Wpisz lub wczytaj treść materiału"></textarea>
+        </label>
+        <label>Rodzaj materiału
+          <select [ngModel]="entryType()" (ngModelChange)="entryType.set($event)" name="entryType">
+            <option value="archival_qa">Odpowiedź z wcześniejszej sprawy</option>
+            <option value="legal_act">Akt prawny</option>
+            <option value="ordinance">Zarządzenie</option>
+          </select>
+        </label>
+        <details class="secondary-options">
+          <summary>Dodatkowe informacje (opcjonalnie)</summary>
+          <div class="field-grid">
+            <label>Sygnatura<input [ngModel]="caseNumber()" (ngModelChange)="caseNumber.set($event)" name="caseNumber" placeholder="np. BKS.IV.1431.601.2026" /></label>
+            <label>Wydział<input [ngModel]="department()" (ngModelChange)="department.set($event)" name="department" /></label>
+          </div>
+        </details>
+        <div class="form-actions">
+          <button class="primary-button" type="submit">Zapisz materiał</button>
+          <button class="secondary-button" type="button" (click)="isAdding.set(false)">Anuluj</button>
+        </div>
+      </form>
+    </section>
+  } @else {
+    <section class="panel archive-panel">
+      <div class="search-bar">
+        <input aria-label="Szukaj w bazie wiedzy" placeholder="Szukaj po temacie lub treści" [ngModel]="search()" (ngModelChange)="search.set($event)" />
+        <select aria-label="Rodzaj materiału" [ngModel]="typeFilter()" (ngModelChange)="typeFilter.set($event)">
+          <option value="all">Wszystkie rodzaje</option>
+          <option value="archival_qa">Odpowiedzi</option>
+          <option value="legal_act">Akty prawne</option>
+          <option value="ordinance">Zarządzenia</option>
+        </select>
+        <button class="primary-button" (click)="startAdding()">＋ Dodaj materiał</button>
+      </div>
+
+      <div class="entry-list">
+        @for (entry of filteredEntries(); track entry.id) {
+          <article class="entry">
+            <div class="entry-heading">
+              <span class="entry-kind">{{ entry.type === 'legal_act' ? 'Akt prawny' : entry.type === 'ordinance' ? 'Zarządzenie' : 'Odpowiedź' }}</span>
+              <time>{{ formatDate(entry.date) }}</time>
+            </div>
+            <h2>{{ entry.title }}</h2>
+            <p class="entry-summary">{{ entry.questionSummary }}</p>
+            <details>
+              <summary>Pokaż treść</summary>
+              <p class="entry-answer">{{ entry.answerText }}</p>
+              <p class="entry-source">{{ entry.caseNumber }} · {{ entry.department }}</p>
+            </details>
+          </article>
+        } @empty {
+          <div class="empty-state">Nie znaleziono materiałów. Zmień wyszukiwanie lub filtr.</div>
+        }
+      </div>
+    </section>
+  }
+} @else if (activeTab() === 'departments') {
+  <section class="department-list panel">
+    @for (department of departments(); track department.id) {
+      <article class="department-card">
+        <div><strong>{{ department.name }}</strong><span>{{ department.isExternal ? 'Podmiot zewnętrzny' : department.code }}</span></div>
+        <p>{{ department.scope }}</p>
+        <small>{{ department.contactEmail }}{{ department.address ? ' · ' + department.address : '' }}</small>
+      </article>
+    }
+  </section>
+} @else {
+  <section class="privacy-panel panel">
+    <h2>Co sprawdzić przed udostępnieniem informacji</h2>
+    <p class="muted">Poniższe dane mogą wymagać anonimizacji. Każdy dokument powinien sprawdzić pracownik.</p>
+    <ul>
+      @for (rule of anonymizationRules(); track rule) { <li>{{ rule }}</li> }
+    </ul>
+  </section>
+}
